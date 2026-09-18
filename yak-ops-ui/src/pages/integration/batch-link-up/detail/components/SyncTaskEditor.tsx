@@ -86,7 +86,11 @@ export default function SyncTaskEditor({
     String(editor.sink.connectorId || '').toLowerCase() === 'mongodb';
 
   const sourceCatalog = useDataSourceTables(sourceId, sourceConfig.database);
-  const targetCatalog = useDataSourceTables(targetId, sinkConfig.database);
+  const targetCatalog = useDataSourceTables(
+    targetId,
+    sinkConfig.database,
+    { includeViews: false },
+  );
   const sourceColumnRequest = sourceConfig.readMode === 'sql'
     ? sourceConfig.sql?.trim() ? { query: sourceConfig.sql } : undefined
     : sourceConfig.table ? { table_path: sourceConfig.table } : undefined;

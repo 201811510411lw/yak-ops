@@ -5,7 +5,14 @@ import { dataSourceCatalogApi } from '@/services/data-source/legacy';
 const TABLE_SEARCH_DEBOUNCE_MS = 250;
 const TABLE_SEARCH_LIMIT = 100;
 
-const normalizeTableNames = (data: any): string[] => {
+interface UseDataSourceTablesOptions {
+  includeViews?: boolean;
+}
+
+export const normalizeTableNames = (
+  data: any,
+  includeViews = true,
+): string[] => {
   const values = Array.isArray(data)
     ? data
     : Array.isArray(data?.bizData)
@@ -17,6 +24,10 @@ const normalizeTableNames = (data: any): string[] => {
   return Array.from(
     new Set(
       values
+        .filter((item: any) => {
+          if (includeViews || typeof item === 'string') return true;
+          return String(item?.type || '').trim().toUpperCase() !== 'VIEW';
+        })
         .map((item: any) =>
           typeof item === 'string'
             ? item
@@ -32,10 +43,12 @@ const normalizeTableNames = (data: any): string[] => {
 export default function useDataSourceTables(
   dataSourceId: string,
   database?: string,
+  options: UseDataSourceTablesOptions = {},
 ) {
   const [tables, setTables] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const includeViews = options.includeViews !== false;
 
   useEffect(() => {
     setKeyword('');
@@ -62,7 +75,7 @@ export default function useDataSourceTables(
         )
         .then((response) => {
           if (!active) return;
-          setTables(normalizeTableNames(response?.data));
+          setTables(normalizeTableNames(response?.data, includeViews));
         })
         .catch(() => {
           if (active) setTables([]);
@@ -76,7 +89,7 @@ export default function useDataSourceTables(
       active = false;
       window.clearTimeout(timer);
     };
-  }, [dataSourceId, database, keyword]);
+  }, [dataSourceId, database, includeViews, keyword]);
 
   const search = useCallback((value: string) => {
     setKeyword(value);
