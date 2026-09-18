@@ -67,3 +67,6 @@ spark-warehouse
 # stage completion notes, connector probes, sync markers, or other agent handoff files.
 .stage*
 docs/**/STAGE*.md
+
+# Local agent task workspace
+/.scratch/
